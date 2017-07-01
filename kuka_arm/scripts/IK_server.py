@@ -17,6 +17,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from geometry_msgs.msg import Pose
 from mpmath import *
 from sympy import *
+import numpy as np
 
 
 def handle_calculate_IK(req):
@@ -147,19 +148,20 @@ def handle_calculate_IK(req):
                           [sin(yaw),  cos(yaw),  0],
                           [       0,         0,  1]])
 
-            R0_G = R_x * R_y * R_z  #* R_corr[:3,:3].T
+            R0_G = R_x * R_y * R_z  * R_corr[:3,:3].T
 
             Pwc = Matrix([[px],
                           [py],
                           [pz]]) - s[d7] * R0_G[:,2]
             
 
-            print(Pwc)
+            print('Pwc is {}'.format(Pwc))
 
             """ theta1 """
             theta1 = atan2(Pwc[1,0], Pwc[0,0])
-            if theta1 < 0:
-                theta1 += pi
+            print('theta 1 is {}'.format(theta1))
+            # if theta1 < 0:
+            #     theta1 += pi
             
             """ theta3 """
             P0_2 = T0_2.subs({q1: theta1, q2: 0})[:3,3]
@@ -170,22 +172,26 @@ def handle_calculate_IK(req):
             l1 = sqrt(s[a3]**2 +  s[d4]**2)
             s[a2] # is the a2
 
-            v1 = (l1**2 - s[a2]**2 + l2_4**2)/(2*l2_4*l1)
-            print('v1 is {}'.format(v1))
-            v2 = (l2_4 - (l1**2 - s[a2]**2 + l2_4**2)/(2*l2_4) ) / s[a2]
-            print('v2 is {}'.format(v2))
-            
-            phi = asinh(v1) + asinh(v2)
+            def get_triangle(a, b, c):
+                v = (a**2 + b**2 - c**2) / (2*a*b)
+                return acos(v)
 
+            # v1 = (l1**2 - s[a2]**2 + l2_4**2)/(2*l2_4*l1)
+            # print('v1 is {}'.format(v1))
+            # v2 = (l2_4 - (l1**2 - s[a2]**2 + l2_4**2)/(2*l2_4) ) / s[a2]
+            # print('v2 is {}'.format(v2))
+            # phi = asin(v1) + asin(v2)
+            phi = get_triangle(l1, s[a2], l2_4)
             print('phi is {}'.format(phi))
 
-            alpha = atan2(s[d4], s[a3])
-
+            alpha = atan2(s[d4], -s[a3])
             print('alpha is {}'.format(alpha))
 
-            theta3 = pi - phi - alpha if phi > 0 else pi + phi - alpha
-            # theta3 = pi - phi - alpha
-            # theta3 = theta3 if theta3 < 0 else pi + phi -alpha
+            # theta3 = pi - phi - alpha if phi > 0 else pi + phi - alpha
+            theta3 = alpha - phi
+            # theta3 = theta3 if theta3 > 0 else pi + phi -alpha
+
+            print('theta3 is {}'.format(theta3))
 
             """ theta2 """
             R0_2 = T0_2.subs({q1: theta1, q2: 0})[:3,:3]
@@ -193,32 +199,39 @@ def handle_calculate_IK(req):
             P2_4_2 = R2_0 * P2_4
 
             beta1 = atan2(P2_4_2[0,0], P2_4_2[1, 0])
-            beta2 = asin((s[a2]**2 - l2_4**2 + l1**2)/(2*l1*s[a2])) \
-                   +asin((l1 - (s[a2]**2 - l2_4**2 + l1**2)/(2*l1))/(l2_4))
+            # beta2 = asin((s[a2]**2 - l2_4**2 + l1**2)/(2*l1*s[a2])) \
+            #        +asin((l1 - (s[a2]**2 - l2_4**2 + l1**2)/(2*l1))/(l2_4))
+            beta2 = get_triangle(s[a2], l2_4, l1)
 
             print(beta1)
             print(beta2)
 
-            theta2 = pi/2 - (abs(beta1) + beta2) if beta1 < 0 else pi/2 + (abs(beta1) - beta2)
-            # theta2 =   pi/2 - (beta2 + abs(beta1))
+            # theta2 = pi/2 - (abs(beta1) + beta2) if beta1 < 0 else pi/2 + (abs(beta1) - beta2)
+            theta2 =   pi/2 - (beta2 + beta1)
             # theta2 = theta2 if theta2 < 0 else pi/2 + (abs(beta1) - beta2)
 
-            """theta5"""
-            N0_4 = T0_4.subs({q1: theta1, q2: theta2, q3: theta3, q4: 0})[:3,2]
-            N0_6 = R0_G[:,2]
-            theta5_cos = (N0_4.T * N0_6)[0,0]
-            print('cos theta5 is {}'.format(theta5_cos))
-            theta5 = pi - acos(theta5_cos)
 
-            print('theta5 is {}'.format(theta5))
+            R0_6 = R0_G #* R_corr[:3,:3].T
 
             """theta4"""
             R0_4 = T0_4.subs({q1: theta1, q2: theta2, q3: theta3, q4: 0})[:3,:3]
 
-            R4_6 = R0_4.T * R0_G * R_corr[:3,:3].T
+            R4_6 = R0_4.T * R0_6 
 
             theta4 = atan2(-R4_6[1,2], -R4_6[0,2])
             theta6 = atan2(-R4_6[2,1], R4_6[2,0])
+
+
+            """theta5"""
+            N0_4 = T0_4.subs({q1: theta1, q2: theta2, q3: theta3, q4: theta4})[:3,2]
+            Z0_5 = T0_5.subs({q1: theta1, q2: theta2, q3: theta3, q4: theta4, q5: 0})[:3,2]
+
+            N0_6 = R0_6[:,2]
+            x0406 = N0_4.cross(N0_6)
+            print('x0406 is {}'.format(x0406))
+            theta5 = asin(Z0_5.dot(x0406))
+
+            print('theta5 is {}'.format(theta5))
 
             # Populate response for the IK request
             # In the next line replace theta1,theta2...,theta6 by your joint angle variables
