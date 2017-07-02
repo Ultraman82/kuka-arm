@@ -173,11 +173,13 @@ def handle_calculate_IK(req):
                           [sin(yaw),  cos(yaw),  0],
                           [       0,         0,  1]])
 
-            R0_6 = R_x * R_y * R_z  * R_corr[:3,:3].T
+            # right multiply R_corr Matrix to
+            # transfer from the urdf local frame to frame gripper
+            R0_G = R_x * R_y * R_z  * R_corr[:3,:3].T
 
             Pwc = Matrix([[px],
                           [py],
-                          [pz]]) - s[d7] * R0_6[:,2]
+                          [pz]]) - s[d7] * R0_G[:,2]
             
 
             print('Pwc is {}'.format(Pwc))
@@ -221,7 +223,7 @@ def handle_calculate_IK(req):
             """theta4"""
             R0_4 = T0_4.subs({q1: theta1, q2: theta2, q3: theta3, q4: 0})[:3,:3]
 
-            R4_6 = R0_4.T * R0_6 
+            R4_6 = R0_4.T * R0_G 
 
             theta4 = atan2(-R4_6[1,2], -R4_6[0,2])
             theta6 = atan2(-R4_6[2,1], R4_6[2,0])
@@ -231,7 +233,7 @@ def handle_calculate_IK(req):
             N0_4 = T0_4.subs({q1: theta1, q2: theta2, q3: theta3, q4: theta4})[:3,2]
             Z0_5 = T0_5.subs({q1: theta1, q2: theta2, q3: theta3, q4: theta4, q5: 0})[:3,2]
 
-            N0_6 = R0_6[:,2]
+            N0_6 = R0_G[:,2]
 
             # theta5 is the angle between Z axes of frame 4 and frame 6
             # it can be caculated by the cross of the two axes 
