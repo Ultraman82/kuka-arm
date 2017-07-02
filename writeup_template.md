@@ -91,22 +91,28 @@ R0_G = R0_G_URDF * R_corr.T
     atan(y_wc, x_wc)
     ```
     as show in the picture, wrist center locates joint 4.
-    ![theta1](theta1)
+    ![theta1](./misc_images/theta1.png)
 
-2. theta3 is caculate as show in the picture,
-    ![theta3](theta3)
+2. theta3 is caculated as show in the picture,
+    ![theta3](./misc_images/theta3.png)
    because the a3 is negtive, so, in our case
    ```
    alpha - phi
    ```
 
-3. theta4, theta6 can be caculated by
+3. the thea2 si cacluated as show in the picture,
+    ![theta2](./misc_images/theta2.png)
+    the formula is 
+    ```
+    pi/2 - (beta2 + beta1)
+    ```
+4. theta4, theta6 can be caculated by
    ``` python 
     theta4 = atan2(-R4_6[1,2], -R4_6[0,2])
     theta6 = atan2(-R4_6[2,1], R4_6[2,0])
    ```
 
-4. theta5 is the angle of link6 rotate from link4, so we could comput it by cross mulitply Z axes of link4 and link6
+5. theta5 is the angle of link6 rotate from link4, so we could comput it by cross mulitply Z axes of link4 and link6
     ```python
     x0406 = N0_4.cross(N0_6)
     ```
@@ -118,8 +124,8 @@ R0_G = R0_G_URDF * R_corr.T
 
 This implementaion could pick up and drop objects correctly in every cases. here are some screenshots for demo:
 
-![](p1)
-![](p2)
-![](p3)
-![](p5)
-![](p7)
+![](./misc_images/p1.png)
+![](./misc_images/p2.png)
+![](./misc_images/p3.png)
+![](./misc_images/p5.png)
+![](./misc_images/p7.png)
