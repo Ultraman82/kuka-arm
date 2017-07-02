@@ -95,6 +95,7 @@ R0_G = R0_G_URDF * R_corr.T
 
 2. theta3 is caculated as show in the picture,
     ![theta3](./misc_images/theta3.png)
+   
    because the a3 is negtive, so, in our case
    ```
    alpha - phi
@@ -102,6 +103,7 @@ R0_G = R0_G_URDF * R_corr.T
 
 3. the thea2 si cacluated as show in the picture,
     ![theta2](./misc_images/theta2.png)
+    
     the formula is 
     ```
     pi/2 - (beta2 + beta1)
@@ -124,8 +126,8 @@ R0_G = R0_G_URDF * R_corr.T
 
 This implementaion could pick up and drop objects correctly in every cases. here are some screenshots for demo:
 
-![](./misc_images/p1.png)
-![](./misc_images/p2.png)
-![](./misc_images/p3.png)
-![](./misc_images/p5.png)
-![](./misc_images/p7.png)
+![](./misc_images/1.png)
+![](./misc_images/2.png)
+![](./misc_images/3.png)
+![](./misc_images/5.png)
+![](./misc_images/7.png)
