@@ -20,6 +20,33 @@ from sympy import *
 import numpy as np
 
 
+def get_angle_of_side_c(a, b, c):
+    """Retrive the angle opposite side c with lengths 
+    three sides
+    
+    Args:
+        c (float): the length of the side c, which we want to know.
+        a (float): the length of one side
+        b (float): the lenght of the other side
+
+    
+    Returns:
+        float:  the radians of the angle C which is opposite to
+                side c.
+    """
+    v = (a**2 + b**2 - c**2) / (2*a*b)
+    print('a b c is {}, {}, {}'.format(a, b, c))
+    print('traingle v is : {}'.format(v))
+
+    if v > 1:
+        return 0
+
+    if v < -1:
+        return pi
+    
+    return acos(v)
+
+
 def handle_calculate_IK(req):
     rospy.loginfo("Received %s eef-poses from the plan" % len(req.poses))
     if len(req.poses) < 1:
@@ -95,8 +122,6 @@ def handle_calculate_IK(req):
                            [ sin(q7)*sin(alpha6), cos(q7)*sin(alpha6),  cos(alpha6),  cos(alpha6)*d7],
                            [                 0,                 0,           0,                    1]]).subs(s)
             
-            print('T_i_i+1 finish!')
-
             T0_2 = T0_1 * T1_2
             T0_3 = T0_2 * T2_3
             T0_4 = T0_3 * T3_4
@@ -148,11 +173,11 @@ def handle_calculate_IK(req):
                           [sin(yaw),  cos(yaw),  0],
                           [       0,         0,  1]])
 
-            R0_G = R_x * R_y * R_z  * R_corr[:3,:3].T
+            R0_6 = R_x * R_y * R_z  * R_corr[:3,:3].T
 
             Pwc = Matrix([[px],
                           [py],
-                          [pz]]) - s[d7] * R0_G[:,2]
+                          [pz]]) - s[d7] * R0_6[:,2]
             
 
             print('Pwc is {}'.format(Pwc))
@@ -160,34 +185,20 @@ def handle_calculate_IK(req):
             """ theta1 """
             theta1 = atan2(Pwc[1,0], Pwc[0,0])
             print('theta 1 is {}'.format(theta1))
-            # if theta1 < 0:
-            #     theta1 += pi
             
             """ theta3 """
             P0_2 = T0_2.subs({q1: theta1, q2: 0})[:3,3]
             P2_4 = Pwc - P0_2
 
+            # get the distance between 2nd joint and 5th joint 
+            # (4th and 5th joints have same origin)
             l2_4 = sqrt(P2_4[0,0]**2 + P2_4[1, 0]**2 + P2_4[2,0]**2)
 
+            # get the lenth of arm between joint 3rd and 5th joint
             l1 = sqrt(s[a3]**2 +  s[d4]**2)
-            s[a2] # is the a2
 
-            def get_triangle(a, b, c):
-                v = (a**2 + b**2 - c**2) / (2*a*b)
-                print('a b c is {}, {}, {}'.format(a, b, c))
-                print('traingle v is : {}'.format(v))
-
-                if v > 1:
-                    return 0
-                    
-                if v < -1:
-                    return pi
-                
-                return acos(v)
-
-                #return acos(v) if v > =-1  else pi
-
-            phi = get_triangle(l1, s[a2], l2_4)
+            # s[a2] is the length between 2nd joint and 3nd joint
+            phi = get_angle_of_side_c(l1, s[a2], l2_4)
             print('phi is {}'.format(phi))
 
             alpha = atan2(s[d4], -s[a3])
@@ -202,12 +213,10 @@ def handle_calculate_IK(req):
             P2_4_2 = R2_0 * P2_4
 
             beta1 = atan2(P2_4_2[0,0], P2_4_2[1, 0])
-            beta2 = get_triangle(s[a2], l2_4, l1)
+            beta2 = get_angle_of_side_c(s[a2], l2_4, l1)
 
             theta2 =   pi/2 - (beta2 + beta1)
 
-
-            R0_6 = R0_G #* R_corr[:3,:3].T
 
             """theta4"""
             R0_4 = T0_4.subs({q1: theta1, q2: theta2, q3: theta3, q4: 0})[:3,:3]
@@ -223,6 +232,9 @@ def handle_calculate_IK(req):
             Z0_5 = T0_5.subs({q1: theta1, q2: theta2, q3: theta3, q4: theta4, q5: 0})[:3,2]
 
             N0_6 = R0_6[:,2]
+
+            # theta5 is the angle between Z axes of frame 4 and frame 6
+            # it can be caculated by the cross of the two axes 
             x0406 = N0_4.cross(N0_6)
             print('x0406 is {}'.format(x0406))
             theta5 = asin(Z0_5.dot(x0406))
