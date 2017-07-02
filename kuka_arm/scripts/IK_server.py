@@ -174,23 +174,26 @@ def handle_calculate_IK(req):
 
             def get_triangle(a, b, c):
                 v = (a**2 + b**2 - c**2) / (2*a*b)
+                print('a b c is {}, {}, {}'.format(a, b, c))
+                print('traingle v is : {}'.format(v))
+
+                if v > 1:
+                    return 0
+                    
+                if v < -1:
+                    return pi
+                
                 return acos(v)
 
-            # v1 = (l1**2 - s[a2]**2 + l2_4**2)/(2*l2_4*l1)
-            # print('v1 is {}'.format(v1))
-            # v2 = (l2_4 - (l1**2 - s[a2]**2 + l2_4**2)/(2*l2_4) ) / s[a2]
-            # print('v2 is {}'.format(v2))
-            # phi = asin(v1) + asin(v2)
+                #return acos(v) if v > =-1  else pi
+
             phi = get_triangle(l1, s[a2], l2_4)
             print('phi is {}'.format(phi))
 
             alpha = atan2(s[d4], -s[a3])
             print('alpha is {}'.format(alpha))
 
-            # theta3 = pi - phi - alpha if phi > 0 else pi + phi - alpha
             theta3 = alpha - phi
-            # theta3 = theta3 if theta3 > 0 else pi + phi -alpha
-
             print('theta3 is {}'.format(theta3))
 
             """ theta2 """
@@ -199,16 +202,9 @@ def handle_calculate_IK(req):
             P2_4_2 = R2_0 * P2_4
 
             beta1 = atan2(P2_4_2[0,0], P2_4_2[1, 0])
-            # beta2 = asin((s[a2]**2 - l2_4**2 + l1**2)/(2*l1*s[a2])) \
-            #        +asin((l1 - (s[a2]**2 - l2_4**2 + l1**2)/(2*l1))/(l2_4))
             beta2 = get_triangle(s[a2], l2_4, l1)
 
-            print(beta1)
-            print(beta2)
-
-            # theta2 = pi/2 - (abs(beta1) + beta2) if beta1 < 0 else pi/2 + (abs(beta1) - beta2)
             theta2 =   pi/2 - (beta2 + beta1)
-            # theta2 = theta2 if theta2 < 0 else pi/2 + (abs(beta1) - beta2)
 
 
             R0_6 = R0_G #* R_corr[:3,:3].T
