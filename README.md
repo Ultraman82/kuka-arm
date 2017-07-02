@@ -132,3 +132,6 @@ This implementaion could pick up and drop objects correctly in every cases. here
 ![](./misc_images/5.png)
 ![](./misc_images/7.png)
 ![](./misc_images/8.png)
+
+## Reference
+1. Alireza Khatamian, Solving Kinematics Problems of a 6-DOF Robot Manipulator, Int'l Conf. Scientific Computing (CSC'15) 
