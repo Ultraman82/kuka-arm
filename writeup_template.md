@@ -1,5 +1,4 @@
 ## Project: Kinematics Pick & Place
-### Writeup Template: You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
 
 ---
 
@@ -25,6 +24,7 @@
 [p3]: ./misc_images/3.png
 [p5]: ./misc_images/5.png
 [p7]: ./misc_images/7.png
+[p7]: ./misc_images/8.png
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/972/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -131,3 +131,4 @@ This implementaion could pick up and drop objects correctly in every cases. here
 ![](./misc_images/3.png)
 ![](./misc_images/5.png)
 ![](./misc_images/7.png)
+![](./misc_images/8.png)
