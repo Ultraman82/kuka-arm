@@ -95,7 +95,7 @@ R0_G = R0_G_URDF * R_corr.T
     theta6 = atan2(-R4_6[2,1], R4_6[2,0])
    ```
 
-5. theta5 is the angle of link6 rotate from link4, so we could comput it by cross mulitply Z axes of link4 and link6
+5. theta5 is the angle of link6 rotate from link4, so we could compute it by cross mulitply Z axes of link4 and link6
     ```python
     x0406 = N0_4.cross(N0_6)
     ```
